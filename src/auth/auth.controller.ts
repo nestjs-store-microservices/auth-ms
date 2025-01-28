@@ -17,11 +17,6 @@ export class AuthController {
     return this.authService.login(loginUserDto);
   }
 
-  @MessagePattern('auth.logout.user')
-  logoutUser() {
-    return this.authService.logout();
-  }
-
   @MessagePattern('auth.verify.token')
   verifyToken(@Payload() token: string) {
     return this.authService.verifyToken(token);
