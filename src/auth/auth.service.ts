@@ -81,7 +81,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       }
 
       if (!userDB.isActive) {
-        this.handleMessageUnauthorized();
+        this.handleMessageUnauthorized('User is not active');
       }
 
       const isPasswordValid = brcypt.compareSync(password, userDB.password);
@@ -90,7 +90,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         this.handleMessageUnauthorized();
       }
 
-      const { password: __password, isActive: __isActive, ...rest } = userDB;
+      const { password: __password, ...rest } = userDB;
       const tokenJwt = await this.signJWT({ id: rest.id });
       return {
         user: rest,
@@ -122,30 +122,39 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         },
       );
 
-      const {
-        password: __password,
-        isActive: __isActive,
-        ...userDB
-      } = await this.user.findUnique({ where: { id: rest.id } });
+      const { password: __password, ...userDB } = await this.user.findUnique({
+        where: { id: rest.id },
+      });
 
       return {
         user: userDB,
         token: await this.signJWT({ id: rest.id }),
       };
-    } catch (error) {
-      console.log(error);
-      throw new RpcException({ status: 400, message: 'Invalid Token' });
+    } catch {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: 'Invalid Token',
+      });
     }
   }
 
-  private signJWT(payload: JwtPayload) {
+  /**
+   *
+   * @param payload Method that permit sign JWT token
+   * @returns Token JWT value
+   */
+  private signJWT(payload: JwtPayload): string {
     return this.jwtService.sign(payload);
   }
 
-  private handleMessageUnauthorized(): never {
+  /**
+   * Method that permit handle message in exceptions
+   * @param message Value for message error is optional
+   */
+  private handleMessageUnauthorized(message?: string): never {
     throw new RpcException({
       status: HttpStatus.UNAUTHORIZED,
-      message: 'Invalid credentials',
+      message: message ? message : 'Invalid credentials',
     });
   }
 }
