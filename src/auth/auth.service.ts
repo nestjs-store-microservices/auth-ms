@@ -34,7 +34,10 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       const userDB = await this.user.findUnique({ where: { email } });
 
       if (userDB) {
-        throw new RpcException({ status: 400, message: 'User alreday exists' });
+        throw new RpcException({
+          status: HttpStatus.BAD_REQUEST,
+          message: 'User alreday exists',
+        });
       }
 
       const user = await this.user.create({
@@ -61,7 +64,10 @@ export class AuthService extends PrismaClient implements OnModuleInit {
         token: tokenJwt,
       };
     } catch (error) {
-      throw new RpcException({ status: 400, message: error.message });
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
     }
   }
 
