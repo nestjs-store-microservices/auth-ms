@@ -16,3 +16,6 @@ steps:
         'push',
         'northamerica-south1-docker.pkg.dev/iron-radio-450121-s8/store-registry/store-auth-ms',
       ]
+
+    options:
+      logging: CLOUD_LOGGING_ONLY
