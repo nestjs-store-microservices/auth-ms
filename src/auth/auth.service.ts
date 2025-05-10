@@ -16,7 +16,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
   async onModuleInit() {
     await this.$connect();
-    this.loggger.log('Databse connected.');
+    this.loggger.log('Database connected.');
   }
 
   constructor(private readonly jwtService: JwtService) {
@@ -83,17 +83,17 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       const userDB = await this.user.findUnique({ where: { email } });
 
       if (!userDB) {
-        this.handleMessageUnauthorized();
+        this.handleMessageBadRequest();
       }
 
       if (!userDB.isActive) {
-        this.handleMessageUnauthorized('User is not active');
+        this.handleMessageBadRequest('User is not active');
       }
 
       const isPasswordValid = brcypt.compareSync(password, userDB.password);
 
       if (!isPasswordValid) {
-        this.handleMessageUnauthorized();
+        this.handleMessageBadRequest();
       }
 
       const { password: __password, ...rest } = userDB;
@@ -157,9 +157,9 @@ export class AuthService extends PrismaClient implements OnModuleInit {
    * Method that permit handle message in exceptions
    * @param message Value for message error is optional
    */
-  private handleMessageUnauthorized(message?: string): never {
+  private handleMessageBadRequest(message?: string): never {
     throw new RpcException({
-      status: HttpStatus.UNAUTHORIZED,
+      status: HttpStatus.BAD_REQUEST,
       message: message ? message : 'Invalid credentials',
     });
   }
