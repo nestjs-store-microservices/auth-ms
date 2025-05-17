@@ -1,11 +1,8 @@
 import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { RpcException } from '@nestjs/microservices';
-
 import { PrismaClient } from '@prisma/client';
-
 import * as brcypt from 'bcrypt';
-
 import { LoginUserDto, RegisterUserDto } from './dto';
 import { JwtPayload } from './interfaces';
 import { envs } from 'src/config';
@@ -98,9 +95,12 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
       const { password: __password, ...rest } = userDB;
       const tokenJwt = await this.signJWT({ id: rest.id });
+      const refreshToken = await this.generateRefreshToken({ id: rest.id });
+
       return {
         user: rest,
         token: tokenJwt,
+        refreshToken,
       };
     } catch (error) {
       if (error instanceof RpcException) {
@@ -151,6 +151,19 @@ export class AuthService extends PrismaClient implements OnModuleInit {
    */
   private signJWT(payload: JwtPayload): string {
     return this.jwtService.sign(payload);
+  }
+
+  /**
+   * @description
+   * Method that permit generate refresh token value
+   * @param payload Object with payload values
+   * @returns {string} Refresh token value
+   */
+  private generateRefreshToken(payload: JwtPayload): string {
+    return this.jwtService.sign(payload, {
+      secret: envs.jwtRefreshToken,
+      expiresIn: '5min',
+    });
   }
 
   /**
